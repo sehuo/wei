@@ -1,0 +1,59 @@
+<extend name="Base/no_side_common" />
+<block name="body">
+  <div class="admin_container">
+    <section id="contents" class="tab-content">
+      <div class="table-bar">
+        <div class="main_data">
+        	<div class="left">
+        	<a class="data_item" href="{:addons_url('UserCenter://UserCenter/lists')}">
+            	<span>{$count.today|intval}</span><br/>今日新增用户
+            </a>
+            <a class="data_item" href="{:addons_url('UserCenter://UserCenter/lists')}">
+            	<span>{$count.yestoday|intval}</span><br/>昨日新增用户
+            </a>
+            </div>
+            <a class="data_item" href="{:addons_url('UserCenter://UserCenter/lists')}">
+            	<span>{$count.total|intval}</span><br/>总用户数
+            </a>
+            
+        </div>
+     
+    </section>
+  </div>
+</block>
+<block name="script"> 
+  <script type="text/javascript">
+$(function(){
+	//ajax 提交启用
+	$('.use_btn').click(function(){
+		var href = $(this).attr('href');
+		var _this =$(this);
+		if(href.indexOf("1.html")!=-1){
+			//禁用
+			$.get(href,function(){
+				updateAlert("更新成功!","alert-success");
+				_this.attr('href',href.replace("1.html","0.html"));
+				_this.text("启用");
+				_this.parents('tr').attr('style','color:#ccc');
+				_this.parents('tr').find('.use_status').text("已禁用");;
+			});
+		}else{
+				//启用
+				$.get(href,function(){
+					updateAlert("更新成功!","alert-success");
+					_this.attr('href',href.replace("0.html","1.html"));
+					_this.text("禁用");
+					_this.parents('tr').removeAttr('style');
+					_this.parents('tr').find('.use_status').text("已启用");
+				});
+				}
+		setTimeout(function(){
+			$('#top-alert').find('.close').click();
+			},3000);		
+		return false;
+		
+		});
+
+})
+</script> 
+</block>
