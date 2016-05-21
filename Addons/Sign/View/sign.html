@@ -1,0 +1,227 @@
+<include file="Public/weui_head" />
+<style>
+.module_involer{background-color:#595757;color:#fff;padding-bottom:0;}
+.module_involer h2{text-align:center;}
+#involer_me{position:relative}
+#involer_me img{width:50px;height:50px;border-radius:50%;vertical-align:bottom;margin:0 5px 0 0}
+#involer_me figcaption,#involer_me img{display:inline-block}
+#involer_me figcaption{color:#ecf0f1}
+#involer_me figcaption p{font-size:12px;}
+.involer_me_btn{position:absolute;right:0;top:10px;background-color:#231815;border-radius:4px;font-size:14px;padding:6px 8px;}
+#involer_process{background:#fff;position:relative;margin:0 -15px 0;}
+#involer_process:before{content:"";position:absolute;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid #fff;top:-10px;left:30px}
+#involer_process > .flexbox{padding:15px 0 15px;}
+#involer_process > .flexbox > .flexbox-item{color:#bbb;text-align:center;border-right:1px solid #eee;font-size:10px}
+.sign_btn{background:#fff;position:fixed;bottom: 0;left: 0;width: 100%; border-top:1px solid #676767;text-align:center;}
+.sign_btn a:first-child{color:#595757; }
+.sign_btn .weui_btn{border-radius: 0;position: absolute;left: 50%;top:0;}
+.sign_btn_area{position:relative;height:36px;line-height:36px;overflow:hidden;}
+.sign_btn_area>a,
+.sign_btn_area>button{width:50%;float:left;}
+.rule-bg{animation:anc 1s ease}
+@-webkit-keyframes anc{
+    0%{background:rgba(247,172,41,.2)}33%{background:rgba(247,172,41,0)}
+    66%{background:rgba(247,172,41,.2)}to{background:rgba(247,172,41,0)}
+}
+@keyframes anc{
+    0%{background:rgba(247,172,41,.2)}33%{background:rgba(247,172,41,0)}
+    66%{background:rgba(247,172,41,.2)}to{background:rgba(247,172,41,0)}
+}
+.desc{position:relative;background:#fff;padding:20px 0}
+.desc>h1{background:#000;color:#fff;line-height:40px;height:40px;display: inline-block;font-size:16px;font-weight:400;padding: 0 5px;}
+.desc>img{border:1px solid #595757;height:60px;width:60px;position: absolute;right:10px;top:10px;}
+.cover{width:100%;}
+</style>
+<body>
+    <img class="cover mb" src="{$sign.cover}"/>
+    <div class="desc">
+        <h1>{$sign.title}</h1>
+    </div>
+    <article class="weui_article module">
+        <section>
+            <section>
+                {$sign.content}
+            </section>
+        </section>
+    </article>
+    <article class="weui_article module_involer mb">
+        <section id="involer_me">
+            <figure>
+                <img src="{$userInfo[face]}">
+                <figcaption>                
+                        <b>
+                            {$userInfo['name']} (No:{$uid})
+                        </b>                   
+                    <p>
+                        <if condition="$status['isSigned'] eq false">
+                            您目前尚未报名
+                        <elseif condition="$status['is_pay'] eq 1"/>
+                            您已报名成功
+                        <elseif condition="$involer_numbers lt $sign[tj_count]"/>
+                            还需邀请{$sign[tj_count] - $involer_numbers}人才有参与资格
+                        </if>
+                    </p>
+                </figcaption>
+            </figure>
+            <if condition="$status['isCanInvite'] eq true">
+                <span class="involer_me_btn go_involer">邀请好友</span>
+            </if>
+        </section>
+        <section id="involer_process" <if condition="$status['is_pay'] eq 1"> class="hide"</if>>
+            <div class="flexbox">
+                <div class="flexbox-item">
+                    活动原价
+                    <p>&#65509;<em class="price">{$sign[money]}</em></p>
+                </div>
+                <div class="flexbox-item">
+                    需邀请人数
+                    <p><em class="price">{$sign[tj_count]}</em></p>
+                </div>
+                <div class="flexbox-item">
+                    已邀请
+                    <p><em class="price">{$involer_numbers}</em></p>
+                </div>
+            </div>
+        </section>
+    </article>
+    <article class="weui_article module mb">
+        <h1 id="rule">
+            参与规则
+        </h1>
+        <section>
+            <section>
+                {$sign.guize}
+            </section>
+        </section>
+        <if condition="$status['is_pay'] eq 0">
+            <h4>
+                <a href="{:addons_url('Sign://Wap/sign_success',array('sign_id'=>$sign['id'], 'id' => $data['id'],'publicid'=>$appinfo['id']))}">进入限时购买通道&gt;&gt;</a>
+            </h4>
+        </if>
+    </article>
+    
+    <form id="form" action="{:addons_url('Sign://Wap/index')}" method="post">
+        <volist name="fields" id="field">
+            <if condition="$field['is_show'] == 4">
+                <input type="hidden" class="text input-large" name="{$field.name}" value="{:I($field[name], $field[value])}">
+            </if>
+            <if condition="$field['is_show'] == 1 || $field['is_show'] == 3 || ($field['is_show'] == 5 && I($field['name']) )">
+                <switch name="field.type">
+                    <case value="string">
+                        <input type="hidden" name="{$field.name}" value="{$data[$field['name']]}">
+                    </case>
+                    <case value="textarea">
+                        <input type="hidden" name="{$field.name}" value="{$data[$field['name']]}">
+                    </case>
+                    <case value="radio">
+                        <volist name=":parse_field_attr($field['extra'])" id="vo">
+                            <input type="hidden" value="{$key}" name="{$field.name}">
+                        </volist>
+                    </case>
+                    <case value="checkbox">
+                        <volist name=":parse_field_attr($field['extra'])" id="vo">
+                            <input type="hidden" value="{$key}" name="{$field.name}[]">
+                        </volist>
+                    </case>
+                    <default/>
+                    <input type="hidden" name="{$field.name}" value="{$data[$field['name']]}">
+                </switch>
+            </if>
+        </volist>
+
+        <input type="hidden" name="id" value="{$data.id}">
+        <div style="height:24px"></div>
+        <div class="sign_btn hide">
+            <div class="sign_btn_area">
+                <a href="#rule" id="ruleBtn">
+                    参与规则
+                </a>
+                
+                <if condition="$status['is_pay'] eq 1">
+                    <button type="button" class="weui_btn weui_btn_disabled">
+                        已参与
+                    </button>
+                <elseif condition="$status['isBegin'] eq false"/>
+                    <button type="button" class="weui_btn weui_btn_disabled">
+                        暂未开始
+                    </button>
+                <elseif condition="$status['isEnd'] eq true"/>
+                    <button type="button" class="weui_btn weui_btn_disabled">
+                        活动已过期
+                    </button>
+                <elseif condition="$status['isFull']" />
+                    <button type="button" class="weui_btn weui_btn_disabled">
+                        名额已满
+                    </button>
+                <elseif condition="$status['isSigned'] eq true"/>
+                    <a class="go_involer weui_btn">邀请好友</a>
+                <else/>  
+                    <button type="submit" class="submitBtn weui_btn">
+                        我要报名
+                    </button>
+                </if>
+            </div>
+        </div>
+    </form>
+
+    <div id="desc_text" class="hide">{$sign.intro}</div>
+    <include file="Public/weui_foot" />
+    <block name="script">
+        <script type="text/javascript">
+        (function(D){
+            var dialog2 = D.querySelector('#dialog2');
+            WeiPHP.addEvent(D.querySelector('.weui_mask'), 'click', function(){
+                dialog2.style.display = 'none';
+            });
+
+            function submit(e) {
+                e.preventDefault();
+                WeiPHP.loadingToastShow();
+                var qrcodeimg = '{$qrcodeimg}';
+                var imgQr = new Image(); 
+                imgQr.onload = function(){
+                    WeiPHP.loadingToastHide();
+                    imgQr.onload = null;
+                    dialog2.style.display = 'block';
+                    dialog2.querySelector('.weui_dialog_bd').innerHTML = '<img src="'+ qrcodeimg +'" width="90%"> <br>长按二维码报名';
+                    dialog2.querySelector('.weui_btn_dialog').style.display = 'none';
+                }
+                imgQr.src = qrcodeimg;
+            }
+
+            function goRule(e){
+                var t = D.querySelector("#rule");
+                var oldCls = t.className;
+                t.className = oldCls + ' rule-bg';
+                setTimeout(function(){
+                    t.className = oldCls;
+                },1e3);
+            }
+
+            wx.ready(function(){
+                var btn = D.querySelector('.sign_btn');
+                btn.className = btn.className.replace(/hide/, '');
+                WeiPHP.addEvent(D.querySelector("#ruleBtn"), 'click', goRule);
+                WeiPHP.initWxShare({
+                    title: "{$sign.title}",
+                    imgUrl: "{$sign.cover}",
+                    desc: D.querySelector('#desc_text').innerHTML,
+                    link: "{:U('index',array('sign_id'=>$sign['id'],'uid'=>$uid,'publicid'=>$appinfo['id'],'tj_uid'=>$uid))}",
+                    success: function(){
+                        alert('你已经发送邀请，你的好友接受邀请成功报名后会在【{$appinfo.public_name}】公众号通知您');
+                    }
+                });
+                WeiPHP.addEvent(D.querySelectorAll(".go_involer"), 'click', function(){
+                    WeiPHP.showShareFriend();
+                });
+                
+                WeiPHP.addEvent(D.querySelector("#form"), 'submit', function(e){
+                    submit.call(this, e);
+                });
+            });
+        })(document);
+        </script>
+    </block>
+</body>
+
+</html>

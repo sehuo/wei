@@ -1,0 +1,85 @@
+<php>$public=get_token_appinfo();</php>
+<include file="Public/weui_head"/>
+<style>
+  .pay{font-size:12px;color:#999;padding:2em 0 0;text-align:center;}
+  #t{color:#000;font-style:normal;margin-right:2px; margin-left:2px;}
+  .t_area{padding: 20px 0;}
+  .pbox{
+    width:160px;height:160px;border-radius:80px;border:3px solid #eee;
+    display: inline-block;position:relative;margin:2em 0;
+  }
+  .pa{font-size:12px;line-height:60px}
+  .pb{color:#ddd;position:absolute;top:0;left:10px;font-size:30px;line-height:160px;}
+  .pb .price{font-size:36px;}
+  .pc{position:absolute;width:100%;font-size:12px;color:#ccc;bottom:10px; text-align:center;line-height:12px;}
+</style>
+<body>
+  <div class="pay">
+      <div>付费学员专属优惠通道</div>
+      <div class="pbox">
+        <div class="pa">优惠特价</div>
+        <div class="pb">&#65509;<b class="price">{$price}</b></div>
+        <div class="pc">原价<br><del>{$sign.money}</del></div>
+      </div>
+
+      <div class="t_area">
+        请在<em id="t">0:00</em>内支付，逾时将恢复原价
+      </div>
+      <div class="weui_opr_area">
+          <p class="weui_btn_area">
+              <if condition="$noSigned">
+                <button class="weui_btn weui_btn_disabled" type="button">请先到活动中报名</button>
+              <elseif condition="$is_pay"/>
+                <button class="weui_btn weui_btn_disabled" type="button">已付学费</button>
+              <else/>
+                  <a href="{$payUrl}" class="weui_btn" id="pay">支付学费</a>
+              </if>
+          </p>
+      </div>
+
+      <div class="weui_extra_area">
+          <a href="{:U('index',array('sign_id'=>$sign['id'],'publicid'=>$public['id']))}">查看详情</a>
+      </div>
+  </div>
+  <div id="qrCode"></div>
+  <include file="Public/weui_foot"/>
+  <script type="text/javascript">
+    wx.ready(function(){
+      wx.hideOptionMenu();
+      var textLink = "{:U('index',array('sign_id'=>$sign['id'],'uid'=>$uid,'publicid'=>$public['id'],'tj_uid'=>$uid))}";
+      WeiPHP.initWxShare({
+        title:"{$sign.title}",
+        imgUrl:"{$sign.cover}",
+        desc:"{$sign.intro}",
+        link:textLink
+      });
+    });
+
+    function countDown(leftTime) {
+      if(leftTime < 0 && timer){
+        clearInterval(timer);
+      };
+      var leftsecond = parseInt(leftTime/1000); 
+      var day1=Math.floor(leftsecond/(60*60*24)); 
+      var hour=Math.floor((leftsecond-day1*24*60*60)/3600); 
+      var minute=Math.floor((leftsecond-day1*24*60*60-hour*3600)/60); 
+      var second=Math.floor(leftsecond-day1*24*60*60-hour*3600-minute*60); 
+      el.innerHTML = (day1 > 0 ? day1 + "天" : '') + (hour > 0 ? hour + "小时 " : '') + minute+":"+second; 
+    } 
+    var el = document.querySelector('#t');
+    var leves = {$promotion_minute_leve};
+    var timer;
+    
+    if(leves > 0){
+      var end = new Date().getTime() + (leves * 1000);
+      timer = window.setInterval(function(){
+        var n = new Date().getTime();
+        countDown(end - n);
+      }, 1000); 
+    }
+    WeiPHP.addEvent(document.querySelector('#pay'), 'click', function(){
+      WeiPHP.loadingToastShow();
+    });
+  </script>
+</body>
+</html>

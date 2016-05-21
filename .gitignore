@@ -10,7 +10,6 @@ coverage/
 .profile
 *.swp
 *.log
-*.diff
 *.patch
 *.bak
 *.iml
@@ -63,4 +62,5 @@ minify.php
 readme.txt
 info.txt
 error.txt
-
+install.sql
+uninstall.sql

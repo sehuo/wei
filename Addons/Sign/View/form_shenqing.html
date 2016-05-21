@@ -1,0 +1,170 @@
+<include file="Public/weui_head" />
+<style>
+.sign_btn{background:#fff;position:fixed;bottom: 0;left: 0;width: 100%; border-top:1px dotted #ddd;}
+.sign_btn .weui_btn{border-radius:0;border: none}
+.sign_btn .flexbox-item{margin-left:0}
+.sign_btn .flexbox-item:first-child{color:#f39c12; text-align:center;}
+.module_sign{background-color:#ECECEC;}
+</style>
+<body>
+    <header class="mb">
+        <h1>
+            {$sign.title} 申请表
+        </h1>
+    </header>
+    <article class="weui_article module">
+        <h1>
+            活动介绍
+        </h1>
+        <section>
+            <section>
+                {$sign.intro}
+            </section>
+        </section>
+    </article>
+
+    <form id="form" action="{:addons_url('Sign://Wap/index')}" method="post">
+        <if condition="count($fields) gt 1">
+            <article class="weui_article module module_sign">
+                <h1>
+                    现在报名
+                </h1>
+                <section>
+                    <section>
+        </if>
+                    <volist name="fields" id="field">
+                        <if condition="$field['is_show'] == 4">
+                            <input type="hidden" class="text input-large" name="{$field.name}" value="{:I($field[name], $field[value])}">
+                        </if>
+                        <if condition="$field['is_show'] == 1 || $field['is_show'] == 3 || ($field['is_show'] == 5 && I($field['name']) )">
+                            <div class="form-item cf">
+                                <div class="weui_cells_title">
+                                    {$field['title']}
+                                    <notempty name="field['remark']">
+                                        （{$field['remark']}）
+                                    </notempty>
+                                </div>
+                                <div class="controls">
+                                    <switch name="field.type">
+                                        <case value="num">
+                                            <input type="text" class="text input-medium" name="{$field.name}" value="{$data[$field['name']]}">
+                                        </case>
+                                        <case value="string">
+                                            <div class="weui_cells weui_cells_form">
+                                                <div class="weui_cell">
+                                                    <div class="weui_cell_bd weui_cell_primary">
+                                                        <input type="text" class="weui_input" name="{$field.name}" value="{$data[$field['name']]}" placeholder="请点击输入">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </case>
+                                        <case value="textarea">
+                                            <div class="weui_cells weui_cells_form">
+                                                <div class="weui_cell">
+                                                    <div class="weui_cell_bd weui_cell_primary">
+                                                        <textarea class="weui_textarea" name="{$field.name}" rows="3">{$data[$field['name']]}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                          </label>
+                                        </case>
+
+                                        <case value="radio">
+                                            <div class="weui_cells weui_cells_radio">
+                                            <volist name=":parse_field_attr($field['extra'])" id="vo">
+                                                <label class="weui_cell weui_check_label" for="{$field.name}_{$key}">
+                                                    <div class="weui_cell_bd weui_cell_primary">
+                                                        <p>{$vo}</p>
+                                                    </div>
+                                                    <div class="weui_cell_ft">
+                                                        <input type="radio" class="weui_check" value="{$key}" name="{$field.name}" id="{$field.name}_{$key}"
+                                                            <eq name="data[$field['name']]" value="$key">checked="checked"</eq>>
+                                                        <span class="weui_icon_checked"></span>
+                                                    </div>
+                                                </label>
+                                            </volist>
+                                            </div>
+                                        </case>
+                                        <case value="checkbox">
+                                            <div class="weui_cells weui_cells_checkbox">
+                                                <volist name=":parse_field_attr($field['extra'])" id="vo">
+                                                    <label class="weui_cell weui_check_label" for="{$field.name}_{$key}">
+                                                        <div class="weui_cell_hd">
+                                                            <input type="checkbox" class="weui_check" value="{$key}" name="{$field.name}[]" id="{$field.name}_{$key}"
+                                                                <in name="key"
+                                                                value="$data[$field['name']]">
+                                                                checked="checked"
+                                                                </in>>
+                                                            <i class="weui_icon_checked"></i>
+                                                        </div>
+                                                        <div class="weui_cell_bd weui_cell_primary">
+                                                            <p>{$vo}</p>
+                                                        </div>
+                                                    </label>
+                                                </volist>
+                                            </div>
+                                        </case>
+                                        <default/>
+                                        <input type="text" class="text input-large" name="{$field.name}" value="{$data[$field['name']]}">
+                                    </switch>
+                                </div>
+                            </div>
+                        </if>
+                    </volist>
+        <if condition="count($fields) gt 1">
+                    </section>
+                </section>
+            </article>
+        </if>
+        <div style="height:40px"></div>
+        <div class="weui_btn_area">
+            <button type="submit" class="submitBtn weui_btn">
+                提交
+            </button>
+        </div>
+        <br>
+    </form>
+
+    <include file="Public/weui_foot" />
+    <script src="./weui/zepto.min.js"></script>
+    <block name="script">
+        <script type="text/javascript">
+        var loadingToast = $('#loadingToast');
+
+        $('#form').on('submit', function(e) {
+            e.preventDefault();
+            loadingToast.show();
+            $.ajax({
+                url: "{:addons_url('Sign://Wap/userpost')}",
+                type: 'post',
+                data: $('#form').serializeArray(),
+                dataType: 'json',
+                success: function(json) {
+                    loadingToast.hide();
+                    if (json.status == 1) {
+                        $('#toast').show();
+                    } else {
+                        $('#dialog2').show().find('.weui_dialog_bd').html(json.info);
+                        $('#dialog2').find('.weui_btn_dialog').on('click', function() {
+                            $('#dialog2').hide();
+                        });
+                    }
+                    if (json.url) {
+                        setTimeout(function() {
+                            window.location.href = json.url;
+                        }, 2000);
+                    }
+                },
+                error: function() {
+                    loadingToast.hide();
+                }
+            });
+        });
+        wx.ready(function(){
+            wx.hideOptionMenu();
+        });
+        </script>
+    </block>
+</body>
+
+</html>
